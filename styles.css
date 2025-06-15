@@ -92,7 +92,7 @@ body {
     margin: 2px;
     border-style: none;
 }
-.numeric-button {
+.numeric-button, .decimal-button {
     width: 100px;
     height: 100px;
     border-radius: 50px;
