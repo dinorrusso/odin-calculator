@@ -1,0 +1,127 @@
+
+:root {
+    /* color pallette */
+    --background: rgb(32, 33, 31);
+    --text: rgb(233, 233, 233);
+    --orange: rgb(237, 136, 64);
+    --ltgray: rgb(95,96,93);
+    --dkgray: rgb(66,67,65);
+}
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.title {
+    margin-top: 20px;
+    color: var(--orange);
+    font-size: 2rem;
+
+}
+.body-container {
+    margin-left: auto;
+    margin-right: auto;
+    width : 450px;
+    height: 800px;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: top;
+    background-color: var(--background);
+    border-color: var(--ltgray);
+    border-style: solid ;
+    border-width: 6px;
+}
+
+.display {
+    margin-top: 80px;
+    padding: 10px;
+    background-color: var(--background);
+    color: var(--text);
+    border-radius: 20px;
+    height: 50px;
+    width: 85%;
+    text-align: right;
+    /* direction: rtl; */
+    font-size: 48px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
+
+}
+
+.button-container {
+    width : 95%;
+    margin-top: 10px;
+    /* margin-left: auto;
+    margin-right: auto; */
+    display: flex;
+    flex-direction: column;
+    /* align-items: top; */
+    /* justify-content: start; */
+    background-color: var(--background);
+    /* border-color: rgb(0, 0, 0); */
+    /* border-style: solid; */
+}
+
+.dbl-button-row {
+    height: 240px;
+    /* width : 85%; */
+    margin-top: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.button-row {
+    /* width : 85%; */
+    margin-top: 5px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.std-button {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    font-size: 36px;
+    color: var(--text);
+    /* padding: 20px; */
+    background-color: var(--dkgray);
+    margin: 2px;
+    border-style: none;
+}
+.numeric-button {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    font-size: 36px;
+    /* padding: 20px; */
+    background-color: var(--ltgray);
+    color: var(--text);
+    margin: 5px;
+    border-style: none;
+}
+
+.operation-button {
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    font-size: 36px;
+    /* padding: 20px; */
+    background-color: var(--orange);
+    color: var(--text);
+    margin: 5px;
+    border-style: none;
+}
+.double-button {
+    width: 120px;
+    height: 220px;
+    border-radius: 10px;
+    font-size: 36px;
+    padding: 20px;
+    background-color: var(--orange);
+    margin: 5px;
+    border-style: none;
+}
