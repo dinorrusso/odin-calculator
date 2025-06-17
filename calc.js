@@ -3,18 +3,6 @@ function log() {
   console.log(calculator);
 }
 //-------------------------------------------------------------
-// function wait(ms) {
-//   return new Promise((resolve) => setTimeout(resolve, ms));
-// }
-
-// async function appendCharsWithDelay(div, initialText, newString, delayMs) {
-//   for (const char of newString) {
-//     initialText += char; // Append the new character
-//     div.textContent = initialText.slice(-15); // Update the div
-//     await wait(delayMs); // Wait for the specified delay
-//   }
-// }
-//-------------------------------------------------------------
 function addButtons(btnArr) {
   const btnRow = document.createElement("div");
   btnRow.classList.add("button-row");
@@ -34,23 +22,21 @@ function refreshDisplay() {
 //-------------------------------------------------------------
 function calculatorReset(initValue) {
   display.textContent = initValue;
-  calculator.state = OPERAND1_STATE;
+  calculator.state = OP1;
   calculator.operator = undefined;
   calculator.inputBuffer = [initValue, ""];
   calculator.operands = [undefined, undefined];
   calculator.lastKeyEntered = undefined;
-  calculator.value = undefined;
 }
 //-------------------------------------------------------------
 //event functions
 function clearDisplay() {
   const display = document.querySelector(".display");
-  calculator.inputBuffer = ["0"], [""];
+  calculator.inputBuffer = ["0", ""];
   refreshDisplay();
-  log();
 }
 //-------------------------------------------------------------
-// simple math functions for total event
+// simple math functions for assignment to calculator.operand
 const add = (op1, op2) => op1 + op2;
 const subtract = (op1, op2) => op1 - op2;
 const multiply = (op1, op2) => op1 * op2;
@@ -69,8 +55,8 @@ const ALL_CLEAR = "AC";
 
 //state constants
 
-const OPERAND1_STATE = 0;
-const OPERAND2_STATE = 1;
+const OP1 = 0;
+const OP2 = 1;
 const TOTAL_STATE = "total";
 //-------------------------------------------------------------
 // button data
@@ -158,10 +144,8 @@ addButtons(calcButtons[4]);
 //clear button event listener
 const clearBtn = document.getElementById("ac");
 clearBtn.addEventListener("click", function (event) {
-  console.log(`in clear display event ${event}`);
   clearDisplay();
   calculatorReset("0");
-  log();
   event.stopImmediatePropagation(); //no need
 }); // end event listener function
 //----------------------------------------------------
@@ -197,9 +181,19 @@ signBtn.addEventListener("click", function (event) {
   //if result is positive, replace buffer content
   //if is negative enclose in () and replace buffer content
   //if input buffer is zero just ignore event
-  let tempValue = Number(calculator.inputBuffer[mode]);
-  tempValue = tempValue * -1;
-  calculator.inputBuffer[mode] = tempValue < 0 ? `${tempValue}` : `${tempValue}`;
+  if (calculator.lastKeyEntered !== '%'){
+    let tempValue = Number(calculator.inputBuffer[mode]);
+    tempValue = tempValue * -1;
+    calculator.inputBuffer[mode] = tempValue < 0 ? `${tempValue}` : `${tempValue}`;
+  }else{
+    let tempValue = Number(calculator.inputBuffer[mode].slice(0, -1));
+    tempValue = tempValue * -1;
+    calculator.inputBuffer[mode] = tempValue < 0 ? `${tempValue}%` : `${tempValue}%`;
+    //becuase % is special need to adjust operand as well
+
+    calculator.operands[mode] = tempValue/100;
+  }
+  
   refreshDisplay();
   event.stopImmediatePropagation(); //no need
   log();
@@ -208,12 +202,14 @@ signBtn.addEventListener("click", function (event) {
 const percentBtn = document.getElementById("percent");
 percentBtn.addEventListener("click", function (event) {
   console.log(`in percent event ${event}`);
+  log();
   // just allow single % symbol per input buffer
   let thisKey = event.target.textContent;
   let mode = calculator.state;
-  if(!calculator.inputBuffer[mode].includes(thisKey)){
+  if(!calculator.inputBuffer[mode].includes(thisKey)){ //only 1 % allowed
     calculator.inputBuffer[mode] = calculator.inputBuffer[mode] + thisKey; 
     calculator.operands[mode] = Number(calculator.inputBuffer[mode].slice(0, -1))/100;  //this may not be a good idea
+    calculator.lastKeyEntered = thisKey;
     log();
     refreshDisplay();
   }
@@ -225,7 +221,6 @@ const totalBtn = document.getElementById("total");
 totalBtn.addEventListener("click", function (event) {
   //this should only work when we have operand1 and an operator
   let thisKey = event.target.textContent;
-  console.log(`in total event ${event}`);
   console.log('on entry to total:');
   console.log(calculator);
 
@@ -235,7 +230,9 @@ totalBtn.addEventListener("click", function (event) {
     return;
   }
 
-  calculator.operands[mode] = Number(calculator.inputBuffer[mode]);
+  if (calculator.operands[mode] === undefined){ //% fix
+    calculator.operands[mode] = Number(calculator.inputBuffer[mode]);}
+
   let result = calculator.operator(calculator.operands[0], calculator.operands[1])
 
   if (result % 1 !== 0) { //if true then float - limit to 2 decimal digits
@@ -244,11 +241,11 @@ totalBtn.addEventListener("click", function (event) {
     calculator.inputBuffer[mode] = `${result}`;
   }
 
-  calculator.state = OPERAND1_STATE;
-  calculator.inputBuffer[OPERAND1_STATE] = calculator.inputBuffer[OPERAND2_STATE];
-  calculator.inputBuffer[OPERAND2_STATE] = "";
-  calculator.operands[OPERAND1_STATE] = Number(calculator.inputBuffer[OPERAND1_STATE]); 
-  calculator.operands[OPERAND2_STATE] = undefined;
+  calculator.state = OP1;
+  calculator.inputBuffer[OP1] = calculator.inputBuffer[OP2];
+  calculator.inputBuffer[OP2] = "";
+  calculator.operands[OP1] = Number(calculator.inputBuffer[OP1]); 
+  calculator.operands[OP2] = undefined;
   calculator.lastKeyEntered = thisKey;
   calculator.operator = undefined;
   refreshDisplay();
@@ -263,13 +260,13 @@ backspaceBtn.addEventListener("click", function (event) {
   log();
   let mode = calculator.state;
   //operand 2 logic
-  if (mode === OPERAND2_STATE) {
+  if (mode === OP2) {
     if (calculator.inputBuffer[mode].length > 0){
         //see if we need to delete a '(-n)' 
         if (calculator.inputBuffer[mode].includes("(-")) {
             // empty the buffer and switch modes
             calculator.inputBuffer[mode] = '';
-            mode = OPERAND1_STATE;
+            mode = OP1;
             calculator.operator = undefined;
             calculator.lastKeyEntered =
                 calculator.inputBuffer[mode][calculator.inputBuffer[mode].length - 1];
@@ -277,7 +274,7 @@ backspaceBtn.addEventListener("click", function (event) {
             calculator.inputBuffer[mode] = calculator.inputBuffer[mode].slice(0, -1);
             } 
         } else{// no characters in second input buffer to delete - the last key in the first buffer is a operator
-            mode = OPERAND1_STATE;
+            mode = OP1;
             calculator.inputBuffer[mode] = calculator.inputBuffer[mode].slice(0, -1);
             calculator.operator = undefined;
             calculator.lastKeyEntered =
@@ -336,7 +333,6 @@ numberBtns.forEach((btn) => {
     log();
   });
 });
-//removed generic listener
 //----------------------------------------------------
 //operation buttons event listener - all operations
 const opsBtns = document.querySelectorAll(".operation-button");
@@ -350,8 +346,11 @@ opsBtns.forEach((btn) => {
     //see if we already have an operator
     if (calculator.operator === undefined){
         console.log('entering switch');
-      calculator.lastKeyEntered = thisKey; 
-      calculator.operands[mode] = Number(calculator.inputBuffer[mode]);
+       
+      if (calculator.lastKeyEntered !== '%'){
+        calculator.operands[mode] = Number(calculator.inputBuffer[mode]);
+      } // if % was lastKey then operand alread set
+      calculator.lastKeyEntered = thisKey;
       calculator.inputBuffer[mode] = calculator.inputBuffer[mode] + thisKey;
       switch (thisKey) {
         case ADDITION_SIGN:
@@ -371,7 +370,7 @@ opsBtns.forEach((btn) => {
           console.log("should not have this happen!");
           break;
       }
-    calculator.state = OPERAND2_STATE;
+    calculator.state = OP2;
     }
     console.log('at end of operations event')
     log();
@@ -382,12 +381,11 @@ opsBtns.forEach((btn) => {
 //----------------------------------------------------
 //init the calculator
 let calculator = {
-  state: OPERAND1_STATE,
+  state: OP1,
   operator: undefined,
   lastKeyEntered: undefined,
   inputBuffer: ["0", ""],
   operands: [undefined, undefined],
-  value: 0,
 };
 const display = document.querySelector(".display");
 log();
