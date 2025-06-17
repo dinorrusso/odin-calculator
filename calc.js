@@ -52,7 +52,7 @@ const BACKSPACE_SYMBOL = "\u232B";
 const PERCENT_SIGN = "%";
 const TOTAL = "=";
 const ALL_CLEAR = "AC";
-
+const OPERATORS_ARR = ["\u00F7","\u2715", "-", "+"]
 //state constants
 
 const OP1 = 0;
@@ -260,48 +260,35 @@ backspaceBtn.addEventListener("click", function (event) {
   log();
   let mode = calculator.state;
   //operand 2 logic
-  if (mode === OP2) {
+  if (mode === OP2){
     if (calculator.inputBuffer[mode].length > 0){
-        //see if we need to delete a '(-n)' 
-        if (calculator.inputBuffer[mode].includes("(-")) {
-            // empty the buffer and switch modes
-            calculator.inputBuffer[mode] = '';
-            mode = OP1;
-            calculator.operator = undefined;
-            calculator.lastKeyEntered =
-                calculator.inputBuffer[mode][calculator.inputBuffer[mode].length - 1];
-            } else { // no sign, delete a digit 
-            calculator.inputBuffer[mode] = calculator.inputBuffer[mode].slice(0, -1);
-            } 
-        } else{// no characters in second input buffer to delete - the last key in the first buffer is a operator
-            mode = OP1;
-            calculator.inputBuffer[mode] = calculator.inputBuffer[mode].slice(0, -1);
-            calculator.operator = undefined;
-            calculator.lastKeyEntered =
-                calculator.inputBuffer[mode][calculator.inputBuffer[mode].length - 1];
+        //delete  a character
+        calculator.inputBuffer[mode] = calculator.inputBuffer[mode].slice(0,-1);
+        if(calculator.inputBuffer[mode].length === 0){
+            calculator.lastKeyEntered = calculator.inputBuffer[OP1].slice(-1);
+        } else {
+            calculator.lastKeyEntered = calculator.inputBuffer[mode].slice(-1);
         }
-        if (calculator.inputBuffer[mode].length > 1){
-            calculator.inputBuffer[mode] = calculator.inputBuffer[mode].slice(0, -1);
-            } else
-             {
-                calculator.inputBuffer[mode] = '0';
-                calculatorReset('0');
-            }
-            console.log('end if OperandState2');
-            log();
-        } else {// we are in Operand1_state
-            if (calculator.inputBuffer[mode].includes("(-")) {
-            // empty the buffer and do a reset
-            calculatorReset('0');
-            } else if (calculator.inputBuffer[mode].length > 1) { // no sign, delete a digit 
-                calculator.inputBuffer[mode] = calculator.inputBuffer[mode].slice(0, -1);
-            }else {
-                // <= 1 reset
-                calculatorReset('0');
-            }
-            console.log('end if OperandState1');
-            log();
+    }else {//nothing to delete, need last char of OP1
+        calculator.state = OP1;
+        mode = calculator.state;
+        //delete the operator
+        calculator.inputBuffer[mode] = calculator.inputBuffer[mode].slice(0,-1);
+        calculator.operator = undefined;
+        calculator.lastKeyEntered = calculator.inputBuffer[mode].slice(-1);
+    }
+   
+  }  else { // mode === OP1
+    if (calculator.inputBuffer[mode].length > 1){
+        //delete  a char
+        calculator.inputBuffer[mode] = calculator.inputBuffer[mode].slice(0,-1);
+        calculator.lastKeyEntered = calculator.inputBuffer[mode].slice(-1);
+    } else{ // same as a reset
+        clearDisplay();
+    }
+
   }
+    
   refreshDisplay();
   event.stopImmediatePropagation();
   console.log('end backspace');
