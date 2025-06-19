@@ -6,6 +6,7 @@
     --orange: rgb(237, 136, 64);
     --ltgray: rgb(95,96,93);
     --dkgray: rgb(66,67,65);
+    --error: rgb(255, 0, 0);
 }
 body {
   font-family: Arial, Helvetica, sans-serif;
@@ -16,6 +17,10 @@ body {
     color: var(--orange);
     font-size: 2rem;
 
+}
+.reset-msg {
+    color: var(--error);
+    font-size: 1.5rem;
 }
 .body-container {
     margin-left: auto;
@@ -34,7 +39,7 @@ body {
 }
 
 .display {
-    margin-top: 80px;
+    margin-top: 50px;
     padding: 10px;
     background-color: var(--background);
     color: var(--text);

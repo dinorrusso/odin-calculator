@@ -1,5 +1,5 @@
 //generic key pressed listener
-const keys = document.querySelectorAll(".calculator-key");
+const keys = document.querySelectorAll(".opera");
 keys.forEach((key) => {
     key.addEventListener("click",function (event) {
         console.log(event);

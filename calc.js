@@ -36,11 +36,12 @@ function clearDisplay() {
   refreshDisplay();
 }
 //-------------------------------------------------------------
+//-------------------------------------------------------------
 // simple math functions for assignment to calculator.operand
 const add = (op1, op2) => op1 + op2;
 const subtract = (op1, op2) => op1 - op2;
 const multiply = (op1, op2) => op1 * op2;
-const divide = (op1, op2) => (op2 === 0 ? "undefined" : op1 / op2);
+const divide = (op1, op2) => (op2 === 0 ? "DIV by 0" : op1 / op2);
 //-------------------------------------------------------------
 //character symbol constants
 const CHANGE_SIGN = "\u00B1";
@@ -124,7 +125,7 @@ const calcButtons = [
     },
     { type: "numeric-button", id: "0", text: "0", function: "number" },
     { type: "decimal-button", id: ".", text: ".", function: "decimal" },
-    { type: "total-button", id: "total", text: TOTAL, function: "total" },
+    { type: "operation-button", id: "total", text: TOTAL, function: "total" },
   ],
 ];
 //-------------------------------------------------------------
@@ -217,41 +218,41 @@ percentBtn.addEventListener("click", function (event) {
 });
 //----------------------------------------------------
 // total button event listener
-const totalBtn = document.getElementById("total");
-totalBtn.addEventListener("click", function (event) {
-  //this should only work when we have operand1 and an operator
-  let thisKey = event.target.textContent;
-  console.log('on entry to total:');
-  console.log(calculator);
+// const totalBtn = document.getElementById("total");
+// totalBtn.addEventListener("click", function (event) {
+//   //this should only work when we have operand1 and an operator
+//   let thisKey = event.target.textContent;
+//   console.log('on entry to total:');
+//   console.log(calculator);
 
-  let mode = calculator.state;
+//   let mode = calculator.state;
 
-  if (calculator.operator === undefined) {
-    return;
-  }
+//   if (calculator.operator === undefined) {
+//     return;
+//   }
 
-  if (calculator.operands[mode] === undefined){ //% fix
-    calculator.operands[mode] = Number(calculator.inputBuffer[mode]);}
+//   if (calculator.operands[mode] === undefined){ //% fix
+//     calculator.operands[mode] = Number(calculator.inputBuffer[mode]);}
 
-  let result = calculator.operator(calculator.operands[0], calculator.operands[1])
+//   let result = calculator.operator(calculator.operands[0], calculator.operands[1])
 
-  if (result % 1 !== 0) { //if true then float - limit to 2 decimal digits
-    calculator.inputBuffer[mode] = `${result.toFixed(2)}`;
-  } else {
-    calculator.inputBuffer[mode] = `${result}`;
-  }
+//   if (result % 1 !== 0) { //if true then float - limit to 2 decimal digits
+//     calculator.inputBuffer[mode] = `${result.toFixed(2)}`;
+//   } else {
+//     calculator.inputBuffer[mode] = `${result}`;
+//   }
 
-  calculator.state = OP1;
-  calculator.inputBuffer[OP1] = calculator.inputBuffer[OP2];
-  calculator.inputBuffer[OP2] = "";
-  calculator.operands[OP1] = Number(calculator.inputBuffer[OP1]); 
-  calculator.operands[OP2] = undefined;
-  calculator.lastKeyEntered = thisKey;
-  calculator.operator = undefined;
-  refreshDisplay();
-  log();
-  event.stopPropagation();
-}); // end event listener function
+//   calculator.state = OP1;
+//   calculator.inputBuffer[OP1] = calculator.inputBuffer[OP2];
+//   calculator.inputBuffer[OP2] = "";
+//   calculator.operands[OP1] = Number(calculator.inputBuffer[OP1]); 
+//   calculator.operands[OP2] = undefined;
+//   calculator.lastKeyEntered = thisKey;
+//   calculator.operator = undefined;
+//   refreshDisplay();
+//   log();
+//   event.stopPropagation();
+// }); // end event listener function
 //----------------------------------------------------
 // backspace button event listener
 const backspaceBtn = document.getElementById("backspace");
@@ -322,29 +323,95 @@ numberBtns.forEach((btn) => {
 });
 //----------------------------------------------------
 //operation buttons event listener - all operations
+
+
 const opsBtns = document.querySelectorAll(".operation-button");
 opsBtns.forEach((btn) => {
   btn.addEventListener("click", function (event) {
-    console.log(`in ops event ${event.target.textContent}`);
-    log();
-    let mode = calculator.state;
+    console.log(`in opsButtons event ${event.target.textContent}`);
     let thisKey = event.target.textContent;
     console.log(`thisKey = ${thisKey}`);
-    //see if we already have an operator
-    if (calculator.operator === undefined){
-        console.log('entering switch');
-       
-      if (calculator.lastKeyEntered !== '%'){
-        calculator.operands[mode] = Number(calculator.inputBuffer[mode]);
-      } // if % was lastKey then operand alread set
-      calculator.lastKeyEntered = thisKey;
-      calculator.inputBuffer[mode] = calculator.inputBuffer[mode] + thisKey;
+    log();
+
+    let mode = calculator.state;
+    if (mode === OP1){
       switch (thisKey) {
+        case ADDITION_SIGN:
+          calculator.operator = add;
+          //this next statement is meant to protect against inputBuffer having a % symbol
+          //the evaluation will already have the converted value - e.g. 5% will be 0.05 in operand
+          if (calculator.lastKeyEntered !=='%'){
+            calculator.operands[mode] = Number(calculator.inputBuffer[mode]);
+          }
+          calculator.inputBuffer[mode] = calculator.inputBuffer[mode] + thisKey;
+          calculator.lastKeyEntered = thisKey;
+          break;
+        case SUBTRACTION_SIGN:
+          //TODO: need to add special case for minus sign!
+          calculator.operator = subtract;
+          if (calculator.lastKeyEntered !=='%'){
+            calculator.operands[mode] = Number(calculator.inputBuffer[mode]);
+          }
+          calculator.inputBuffer[mode] = calculator.inputBuffer[mode] + thisKey;
+          calculator.lastKeyEntered = thisKey;
+          break;
+        case MULTIPLICATION_SIGN:
+          calculator.operator = multiply;
+          if (calculator.lastKeyEntered !=='%'){
+            calculator.operands[mode] = Number(calculator.inputBuffer[mode]);
+          }
+          calculator.inputBuffer[mode] = calculator.inputBuffer[mode] + thisKey;
+          calculator.lastKeyEntered = thisKey;
+          break;
+        case DIVISION_SIGN:
+          calculator.operator = divide;
+          if (calculator.lastKeyEntered !=='%'){
+            calculator.operands[mode] = Number(calculator.inputBuffer[mode]);
+          }
+          calculator.inputBuffer[mode] = calculator.inputBuffer[mode] + thisKey;
+          calculator.lastKeyEntered = thisKey;
+          break;
+        case TOTAL:
+          //do nothing - only 1 operand
+          break;
+        default: //not an operator - process as normal
+          console.log("should not have this happen!");
+          break;
+      }
+      calculator.state = OP2;
+      console.log(`after operation event process in OP1`);
+      log();
+    }else{ //mode = OP2
+      if (calculator.lastKeyEntered !=='%'){
+            calculator.operands[mode] = Number(calculator.inputBuffer[mode]);
+          }
+      let result = calculator.operator(calculator.operands[OP1],calculator.operands[OP2]);
+      if (result === 'DIV by 0'){
+        display.textContent = result;
+        //disable all keys except AC
+        // hide all buttons
+        const allButtons = document.querySelector('.button-container');
+        allButtons.style.display = 'none'
+        const resetMsg = document.querySelector('.reset-msg');
+        resetMsg.textContent = "Reload page to reset calculator!"
+        return;
+      }
+      calculator.operands[OP1] = result;
+      calculator.operands[OP2] = undefined;
+      calculator.inputBuffer[OP1] = '' + calculator.operands[OP1];
+       calculator.inputBuffer[OP2] = '';
+      calculator.lastKeyEntered = thisKey;
+
+      if (thisKey === '='){
+        //did a total 
+        calculator.operator = undefined;
+        calculator.state = OP1;
+      }else{
+        switch (thisKey) {
         case ADDITION_SIGN:
           calculator.operator = add;
           break;
         case SUBTRACTION_SIGN:
-          //TODO: need to add special case for minus sign!
           calculator.operator = subtract;
           break;
         case MULTIPLICATION_SIGN:
@@ -356,13 +423,15 @@ opsBtns.forEach((btn) => {
         default: //not an operator - process as normal
           console.log("should not have this happen!");
           break;
-      }
-    calculator.state = OP2;
-    }
-    console.log('at end of operations event')
-    log();
-    refreshDisplay();
+        }//end switch
+        //add operator to the input buffer
+        calculator.inputBuffer[OP1] = calculator.inputBuffer[OP1] + thisKey;
+      }//end else key != '='
+
+    } 
     event.stopImmediatePropagation(); //no need
+    log();
+    refreshDisplay();//end Op2
   }); // end event listener function
 }); //end forEach
 //----------------------------------------------------
